@@ -1,9 +1,13 @@
 import { Box, Button, Snackbar, TextField, Typography } from "@mui/material";
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 const Register = () => {
+  const backendApi = import.meta.env.VITE_BACKEND_API;
   const navigate = useNavigate();
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMsg, setSnackbarMsg] = useState("");
   const [userDetails, setUserDetails] = useState({
     username: "",
     email: "",
@@ -24,11 +28,31 @@ const Register = () => {
     navigate("/");
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     console.log("User Details => ", userDetails);
     if (userDetails.password !== userDetails.confirmPassword) {
       setOpenSnackbar(true);
+      setSnackbarMsg("Password and Confirm Password do not match!");
       return;
+    }
+
+    const payload = {
+      username: userDetails.username,
+      email: userDetails.email,
+      password: userDetails.password,
+    };
+
+    const response = await axios.post(`${backendApi}/users`, payload);
+    console.log("Register Response => ", response);
+    if (response.status == 201) {
+      setOpenSnackbar(true);
+      setSnackbarMsg(response.data.message);
+      setUserDetails({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
     }
   };
 
@@ -123,7 +147,7 @@ const Register = () => {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}
-        message="Password and Confirm Password do not match!"
+        message={snackbarMsg}
       />
     </Box>
   );
