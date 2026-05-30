@@ -12,8 +12,10 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Users = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [editUserId, setEditUserId] = useState(null);
   const [editUserName, setEditUserName] = useState("");
@@ -69,10 +71,18 @@ const Users = () => {
     // const response = await fetch("https://jsonplaceholder.typicode.com/users");
     // const data = await response.json();
     // console.log("Users => ", data);
-    const response = await axios.get(`${backendApi}/users`); // http://localhost:5000/api/users
-    console.log("Users => ", response);
-    if (response.status === 200) {
-      setUsers(response.data);
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Token ::", token);
+      const response = await axios.get(`${backendApi}/users`, {
+        headers: { Authorization: token },
+      }); // http://localhost:5000/api/users
+      console.log("Users => ", response);
+      if (response.status === 200) {
+        setUsers(response.data);
+      }
+    } catch (error) {
+      navigate("/");
     }
   };
   useEffect(() => {
